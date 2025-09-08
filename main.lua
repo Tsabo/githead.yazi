@@ -1,13 +1,20 @@
 ---@diagnostic disable: undefined-global
 
 local save = ya.sync(function(this, cwd, output)
-  if cwd:match("%.git[/\\]") or cwd:match("%.git$") then
-    this.output = nil
-    return
-  end
-  if cx.active.current.cwd == Url(cwd) then
-    this.output = output
-    ui.render()
+  local ok, err = pcall(function()
+    if cwd:match("%.git[/\\]") or cwd:match("%.git$") then
+      this.output = nil
+      return
+    end
+    if cx.active.current.cwd == Url(cwd) then
+      this.output = output
+      if ui and ui.render then
+        ui.render()
+      end
+    end
+  end)
+  if not ok then
+    ya.warn("Error in save sync block: " .. tostring(err))
   end
 end)
 
